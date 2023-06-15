@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import Card from "@mui/material/Card";
 import CardHeader from "@mui/material/CardHeader";
 import CardMedia from "@mui/material/CardMedia";
@@ -9,6 +9,12 @@ import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { red } from "@mui/material/colors";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function BlogCard({
   title,
@@ -16,7 +22,27 @@ export default function BlogCard({
   image,
   username,
   time,
+  id,
+  isUser,
 }) {
+  const navigate = useNavigate();
+
+  const handleEdit = () => {
+    navigate(`/blog-details/${id}`);
+  };
+
+  const handleDelete = async () => {
+    try {
+      const { data } = await axios.delete(`/api/v1/blog/delete-blog/${id}`);
+      if (data?.success) {
+        toast.success("Blog Deleted");
+        window.location.reload();
+      }
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
   return (
     <Card
       sx={{
@@ -30,6 +56,16 @@ export default function BlogCard({
         },
       }}
     >
+      {isUser && (
+        <Box display={"flex"}>
+          <IconButton onClick={handleEdit} sx={{ marginLeft: "auto" }}>
+            <EditIcon color="info" />
+          </IconButton>
+          <IconButton onClick={handleDelete}>
+            <DeleteIcon color="error" />
+          </IconButton>
+        </Box>
+      )}
       <CardHeader
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">

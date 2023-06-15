@@ -1,16 +1,14 @@
-import React, { useState } from "react";
-import { Box, Button, InputLabel, TextField, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Box, Button, InputLabel, TextField, Typography } from "@mui/material";
 import toast from "react-hot-toast";
 
-const CreateBlog = () => {
-  const id = localStorage.getItem("userId");
-  const [inputs, setInputs] = useState({
-    title: "",
-    description: "",
-    image: "",
-  });
+const BlogDetails = () => {
+  const [blogs, setBlogs] = useState({});
+  const id = useParams().id;
+
+  const [inputs, setInputs] = useState({});
 
   const navigate = useNavigate();
 
@@ -25,22 +23,44 @@ const CreateBlog = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(`/api/v1/blog/create-blog`, {
+      const { data } = await axios.put(`/api/v1/blog/update-blog/${id}`, {
         title: inputs.title,
         description: inputs.description,
         image: inputs.image,
         user: id,
       });
       if (data?.success) {
-        toast.success("Blog created successfully.");
+        toast.success("Blog updated successfully.");
         navigate("/my-blogs");
       }
     } catch (error) {
       toast.error(error);
     }
   };
+
+  //   get blog details
+  const getBlogDetail = async () => {
+    try {
+      const { data } = await axios.get(`/api/v1/blog/get-blog/${id}`);
+      if (data?.success) {
+        setBlogs(data?.blog);
+        setInputs({
+          title: data?.blog?.title,
+          description: data?.blog?.description,
+          image: data?.blog?.image,
+        });
+      }
+    } catch (error) {
+      toast.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getBlogDetail();
+  }, [id]);
+  console.log(blogs);
   return (
-    <>
+    <div>
       <form onSubmit={handleSubmit}>
         <Box
           width={"50%"}
@@ -62,7 +82,7 @@ const CreateBlog = () => {
               marginTop: "30px",
             }}
           >
-            Create a post
+            Update A Post
           </Typography>
           <InputLabel
             sx={{ mb: 1, mt: 2, fontSize: "24px", fontWeight: "bold" }}
@@ -103,13 +123,13 @@ const CreateBlog = () => {
             onChange={handleChange}
             required
           />
-          <Button color="primary" variant="contained" type="submit">
-            Submit
+          <Button color="warning" variant="contained" type="submit">
+            Update
           </Button>
         </Box>
       </form>
-    </>
+    </div>
   );
 };
 
-export default CreateBlog;
+export default BlogDetails;
